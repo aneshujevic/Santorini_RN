@@ -1,0 +1,15 @@
+export const imageList = [
+  require('../../static/images/lvl_0.jpg'),
+  require('../../static/images/lvl_1.png'),
+  require('../../static/images/lvl_2.png'),
+  require('../../static/images/lvl_3.png'),
+  require('../../static/images/lvl_4.png'),
+  require('../../static/images/hercules.png'),
+  require('../../static/images/lvl_1_HE.png'),
+  require('../../static/images/lvl_2_HE.png'),
+  require('../../static/images/lvl_3_HE.png'),
+  require('../../static/images/jupiter.png'),
+  require('../../static/images/lvl_1_JU.png'),
+  require('../../static/images/lvl_2_JU.png'),
+  require('../../static/images/lvl_3_JU.png'),
+];
