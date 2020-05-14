@@ -1,0 +1,8 @@
+export const GameStatesEnum = Object.freeze({
+  SETTING_UP_BUILDERS: 0,
+  CHOOSING_BUILDER: 1,
+  CHOOSING_MOVE: 2,
+  CHOOSING_BUILD: 3,
+  WAITING_AI_MOVE: 4,
+  WAITING_AVAILABLE_MOVES: 5,
+});

@@ -7,5 +7,3 @@ export const buildBlock = createAction('BUILD_BLOCK');
 export const chooseBuilder = createAction('CHOOSE_BUILDER');
 
 export const setUpBuilder = createAction('SET_UP_BUILDER');
-
-export const toggleTurn = createAction('TOGGLE_TURN');
