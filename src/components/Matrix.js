@@ -7,6 +7,7 @@ import Cell from './Cell';
 
 export default () => {
   const rows = [[], [], [], [], []];
+
   for (let i = 0; i < 5; i++) {
     rows[i].push(
       <Cell

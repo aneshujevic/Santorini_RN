@@ -1,10 +1,15 @@
 import createReducer from 'redux-toolkit/lib/createReducer';
+import {GameStatesEnum} from '../gameStatesEnum';
 
 export const gameEngineReducer = createReducer({
-  GET_AI_MOVE: (state, action) => {
-    // TODO: implement
+  SET_WAIT_AI_MOVE: (state, action) => {
+    state.gameState = GameStatesEnum.WAITING_AI_MOVE;
   },
-  GET_MOVES_BUILDS_SERVER: (state, action) => {
-    // TODO: implement
+  UNSET_WAIT_AI_MOVE: (state, action) => {
+    state.gameState = GameStatesEnum.CHOOSING_BUILDER;
+  },
+  SET_AVAILABLE_MOVES_BUILDS: (state, action) => {
+    state.availableMovesOrBuilds = action.payload.availableMovesOrBuilds;
+    state.gameState = GameStatesEnum.FREE_TO_PLAY;
   },
 });

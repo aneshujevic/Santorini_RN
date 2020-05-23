@@ -5,4 +5,5 @@ export const GameStatesEnum = Object.freeze({
   CHOOSING_BUILD: 3,
   WAITING_AI_MOVE: 4,
   WAITING_AVAILABLE_MOVES: 5,
+  FREE_TO_PLAY: 6,
 });

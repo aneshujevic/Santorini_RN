@@ -1,11 +1,7 @@
 import createReducer from 'redux-toolkit/lib/createReducer';
 import Alert from 'react-native';
 
-import {GameStatesEnum} from '../store/gameStates';
-
-function alertMessage(message) {
-  Alert.Alert('Warning', message, [{text: 'OK'}]);
-}
+import {GameStatesEnum} from '../gameStatesEnum';
 
 export const moveReducer = createReducer([], {
   SET_UP_BUILDER: (state, action) => {
@@ -25,8 +21,9 @@ export const moveReducer = createReducer([], {
       alertMessage('This cell is already taken, please try again.');
     }
   },
-  CHOOSE_BUILDER: (state, action) => {
+  SELECT_BUILDER: (state, action) => {
     const {selectedId} = action.payload.selectedId;
+
     if (selectedId !== state.firstJu || selectedId !== state.secondJu) {
       alertMessage('Please choose your builder.');
       return;
@@ -35,12 +32,16 @@ export const moveReducer = createReducer([], {
     state.selected = selectedId;
     state.gameState = GameStatesEnum.CHOOSING_MOVE;
   },
+  UNSELECT_BUILDER: (state, action) => {
+    state.selected = -1;
+    state.gameState = GameStatesEnum.CHOOSING_BUILDER;
+  },
   MOVE_BUILDER: (state, action) => {
     const {fromCell} = action.payload.fromCell;
     const {toCell} = action.payload.toCell;
 
     if (state.availableMovesOrBuilds.find(x => x === toCell) === null) {
-      alertMessage('Cannot move builder there, please try again.');
+      alertMessage('Cannot move builder here, please try again.');
       return;
     }
 
@@ -59,9 +60,20 @@ export const moveReducer = createReducer([], {
     state.gameState = GameStatesEnum.CHOOSING_BUILD;
   },
   BUILD_BLOCK: (state, action) => {
-    // TODO: implement
+    const {onCell} = action.payload.toCell;
+
+    if (state.availableMovesOrBuilds.find(x => x === onCell) === null) {
+      alertMessage('Cannot build here, please try again.');
+      return;
+    }
+
+    state.cells[onCell] += 1;
 
     state.selected = -1;
     state.gameState = GameStatesEnum.WAITING_AI_MOVE;
   },
 });
+
+function alertMessage(message) {
+  Alert.Alert('Warning', message, [{text: 'OK'}]);
+}
