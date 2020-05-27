@@ -1,6 +1,5 @@
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
 
-import Matrix from './components/Matrix';
+import Root from './containers/Root';
 
-export default () => <Matrix />;
+export default () => <Root />;

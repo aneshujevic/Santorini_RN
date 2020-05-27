@@ -1,15 +1,26 @@
 import createReducer from 'redux-toolkit/lib/createReducer';
+
+import {
+  setWaitAiMove,
+  unsetWaitAiMove,
+  setAvailableMoves,
+} from '../actions/gameEngineActions';
 import {GameStatesEnum} from '../gameStatesEnum';
 
-export const gameEngineReducer = createReducer({
-  SET_WAIT_AI_MOVE: (state, action) => {
+const initState = {
+  engineState: GameStatesEnum.SETTING_UP_BUILDERS,
+};
+
+const gameEngineReducer = createReducer(initState, {
+  [setWaitAiMove]: (state, action) => {
     state.gameState = GameStatesEnum.WAITING_AI_MOVE;
   },
-  UNSET_WAIT_AI_MOVE: (state, action) => {
+  [unsetWaitAiMove]: (state, action) => {
     state.gameState = GameStatesEnum.CHOOSING_BUILDER;
   },
-  SET_AVAILABLE_MOVES_BUILDS: (state, action) => {
+  [setAvailableMoves]: (state, action) => {
     state.availableMovesOrBuilds = action.payload.availableMovesOrBuilds;
-    state.gameState = GameStatesEnum.FREE_TO_PLAY;
   },
 });
+
+export default gameEngineReducer;

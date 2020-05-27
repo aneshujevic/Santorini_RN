@@ -1,4 +1,4 @@
-export function createJsonRequestAvailableMoves(state, selectedCoordinate) {
+export function createJsonRequestAvailableMoves(state) {
   return [
     {
       cells: serializeCellValue(state.cells),
@@ -6,10 +6,7 @@ export function createJsonRequestAvailableMoves(state, selectedCoordinate) {
       secondHE: state.secondHE,
       firstJU: state.firstJU,
       secondJU: state.secondJU,
-      startPosition: [
-        Math.floor(selectedCoordinate / 5),
-        selectedCoordinate % 5,
-      ],
+      startPosition: [Math.floor(state.selected / 5), state.selected % 5],
       depth: null,
     },
   ];

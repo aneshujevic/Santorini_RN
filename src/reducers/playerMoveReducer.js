@@ -1,11 +1,29 @@
 import createReducer from 'redux-toolkit/lib/createReducer';
 import Alert from 'react-native';
 
+import {
+  setUpBuilder,
+  selectBuilder,
+  unselectBuilder,
+  moveBuilder,
+  buildBlock,
+} from '../actions/playerMoveActions';
 import {GameStatesEnum} from '../gameStatesEnum';
 
-export const moveReducer = createReducer([], {
-  SET_UP_BUILDER: (state, action) => {
-    const {cellIndex} = action.payload.cellIndex;
+const initState = {
+  cells: Array(25).fill(0),
+  firstHE: -1,
+  secondHE: -1,
+  firstJU: -1,
+  secondJU: -1,
+  selected: -1,
+  availableMovesOrBuilds: [],
+};
+
+const playerMoveReducer = createReducer(initState, {
+  [setUpBuilder]: (state, action) => {
+    console.log('HAHAYAWFDHUWQUFQFGBQGQQGQGBQQGQGQ');
+    const {cellIndex} = action.payload;
 
     if (state.cells[cellIndex] === 0) {
       if (state.firstJu === -1) {
@@ -21,8 +39,8 @@ export const moveReducer = createReducer([], {
       alertMessage('This cell is already taken, please try again.');
     }
   },
-  SELECT_BUILDER: (state, action) => {
-    const {selectedId} = action.payload.selectedId;
+  [selectBuilder]: (state, action) => {
+    const {selectedId} = action.payload;
 
     if (selectedId !== state.firstJu || selectedId !== state.secondJu) {
       alertMessage('Please choose your builder.');
@@ -32,13 +50,13 @@ export const moveReducer = createReducer([], {
     state.selected = selectedId;
     state.gameState = GameStatesEnum.CHOOSING_MOVE;
   },
-  UNSELECT_BUILDER: (state, action) => {
+  [unselectBuilder]: (state, action) => {
     state.selected = -1;
     state.gameState = GameStatesEnum.CHOOSING_BUILDER;
   },
-  MOVE_BUILDER: (state, action) => {
-    const {fromCell} = action.payload.fromCell;
-    const {toCell} = action.payload.toCell;
+  [moveBuilder]: (state, action) => {
+    const {fromCell} = state.selected;
+    const {toCell} = action.payload;
 
     if (state.availableMovesOrBuilds.find(x => x === toCell) === null) {
       alertMessage('Cannot move builder here, please try again.');
@@ -59,8 +77,8 @@ export const moveReducer = createReducer([], {
 
     state.gameState = GameStatesEnum.CHOOSING_BUILD;
   },
-  BUILD_BLOCK: (state, action) => {
-    const {onCell} = action.payload.toCell;
+  [buildBlock]: (state, action) => {
+    const {onCell} = action.payload;
 
     if (state.availableMovesOrBuilds.find(x => x === onCell) === null) {
       alertMessage('Cannot build here, please try again.');
@@ -77,3 +95,5 @@ export const moveReducer = createReducer([], {
 function alertMessage(message) {
   Alert.Alert('Warning', message, [{text: 'OK'}]);
 }
+
+export default playerMoveReducer;

@@ -5,7 +5,22 @@ import {
   createJsonRequestAiMove,
   createJsonRequestAvailableMoves,
 } from '../server_communication/serializers';
-import {buildBlock, moveBuilder} from './playerMoveActions';
+import {
+  buildBlock,
+  moveBuilder,
+  selectBuilder,
+  setUpBuilder,
+  unselectBuilder,
+} from './playerMoveActions';
+import {GameStatesEnum} from '../gameStatesEnum';
+import Alert from 'react-native';
+
+const getAvailableMovesURL = 'http://127.0.0.1:8000/getAvailableMoves/';
+const getAvailableBuildsURL = 'http://127.0.0.1:8000/getAvailableBuilds/';
+const getMoveMinmaxAiURL = 'http://127.0.0.1:8000/minimax/';
+const getMoveAlphaBetaAiURL = 'http://127.0.0.1:8000/alphaBeta/';
+const getMoveAlphaBetaCustomAiURL = 'http://127.0.0.1:8000/alphaBetaCustom/';
+const defaultDepth = 3;
 
 export const setWaitAiMove = createAction('SET_WAIT_AI_MOVE');
 
@@ -13,9 +28,10 @@ export const unsetWaitAiMove = createAction('UNSET_WAIT_AI_MOVE');
 
 export const setAvailableMoves = createAction('SET_AVAILABLE_MOVES_BUILDS');
 
-export function getAvailableMoves(state, selectedCoordinate, url) {
-  return dispatch => {
-    const data = createJsonRequestAvailableMoves(state, selectedCoordinate);
+function getAvailableMoves(url) {
+  return (dispatch, getState) => {
+    const state = getState().gameState;
+    const data = createJsonRequestAvailableMoves(state);
 
     axios
       .post(url, data)
@@ -29,8 +45,9 @@ export function getAvailableMoves(state, selectedCoordinate, url) {
   };
 }
 
-export function getAiMove(state, url, depth) {
-  return dispatch => {
+function getAiMove(url, depth) {
+  return (dispatch, getState) => {
+    const state = getState().gameState;
     const data = createJsonRequestAiMove(state, depth);
     dispatch(setWaitAiMove());
 
@@ -48,4 +65,42 @@ export function getAiMove(state, url, depth) {
       })
       .catch(err => console.log(err));
   };
+}
+
+export function doPlayerMove(idOfCell) {
+  return (dispatch, getState) => {
+    const engineState = getState().gameEngineState.gameState;
+    const gameState = getState().gameState;
+
+    switch (engineState) {
+      case GameStatesEnum.SETTING_UP_BUILDERS:
+        dispatch(setUpBuilder(idOfCell));
+        return;
+      case GameStatesEnum.CHOOSING_BUILDER:
+        dispatch(selectBuilder(idOfCell));
+        dispatch(getAvailableMoves(getAvailableMovesURL));
+        return;
+      case GameStatesEnum.CHOOSING_MOVE:
+        if (idOfCell === gameState.selected) {
+          dispatch(unselectBuilder());
+        } else {
+          dispatch(moveBuilder(idOfCell));
+          dispatch(getAvailableMoves(getAvailableBuildsURL));
+        }
+        return;
+      case GameStatesEnum.CHOOSING_BUILD:
+        dispatch(buildBlock(idOfCell));
+        return;
+      case GameStatesEnum.WAITING_AI_MOVE:
+        dispatch(getAiMove(getMoveAlphaBetaCustomAiURL, defaultDepth));
+        return;
+      case GameStatesEnum.WAITING_AVAILABLE_MOVES:
+        return;
+    }
+  };
+}
+
+
+function alertMessage(message) {
+  Alert.Alert('Warning', message, [{text: 'OK'}]);
 }
