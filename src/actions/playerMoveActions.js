@@ -1,4 +1,4 @@
-import createAction from 'redux-toolkit/lib/createAction';
+import {createAction} from '@reduxjs/toolkit';
 
 export const moveBuilder = createAction('MOVE_BUILDER');
 

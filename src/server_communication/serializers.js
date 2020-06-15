@@ -1,12 +1,26 @@
-export function createJsonRequestAvailableMoves(state) {
+export function createJsonRequestAvailableMoves(customBuilderCoords, state) {
   return [
     {
       cells: serializeCellValue(state.cells),
-      firstHE: state.firstHE,
-      secondHE: state.secondHE,
-      firstJU: state.firstJU,
-      secondJU: state.secondJU,
-      startPosition: [Math.floor(state.selected / 5), state.selected % 5],
+      firstHE: state.firstHe,
+      secondHE: state.secondHe,
+      firstJU: state.firstJu,
+      secondJU: state.secondJu,
+      startPosition: [
+      //   Math.floor(
+      //     customBuilderCoords === undefined
+      //       ? state.selected / 5
+      //       : customBuilderCoords / 5,
+      //   ),
+      //   customBuilderCoords === undefined
+      //     ? state.selected % 5
+      //     : customBuilderCoords % 5,
+      // ],
+        Math.floor(
+         state.selected / 5
+        ),
+        state.selected % 5
+      ],
       depth: null,
     },
   ];
@@ -16,10 +30,10 @@ export function createJsonRequestAiMove(state, depth) {
   return [
     {
       cells: serializeCellValue(state.cells),
-      firstHE: this.state.firstHE,
-      secondHE: this.state.secondHE,
-      firstJU: this.state.firstJU,
-      secondJU: this.state.secondJU,
+      firstHE: state.firstHe,
+      secondHE: state.secondHe,
+      firstJU: state.firstJu,
+      secondJU: state.secondJu,
       startPosition: null,
       depth: depth,
     },

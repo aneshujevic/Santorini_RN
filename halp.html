@@ -1,0 +1,255 @@
+		import createAction from 'redux-toolkit/lib/createAction';
+		import {combineReducers} from 'redux';
+import axios from 'axios';
+import thunk from 'redux-thunk';
+import logger from 'redux-logger';
+import {configureStore, getDefaultMiddleware} from '@reduxjs/toolkit';
+import createReducer from 'redux-toolkit/lib/createReducer';
+import Alert from 'react-native';
+
+  const GameStatesEnum = Object.freeze({
+  SETTING_UP_BUILDERS: 0,
+  CHOOSING_BUILDER: 1,
+  CHOOSING_MOVE: 2,
+  CHOOSING_BUILD: 3,
+  WAITING_AI_MOVE: 4,
+  WAITING_AVAILABLE_MOVES: 5,
+});
+
+
+const getAvailableMovesURL = 'http://127.0.0.1:8000/getAvailableMoves/';
+const getAvailableBuildsURL = 'http://127.0.0.1:8000/getAvailableBuilds/';
+const getMoveMinmaxAiURL = 'http://127.0.0.1:8000/minimax/';
+const getMoveAlphaBetaAiURL = 'http://127.0.0.1:8000/alphaBeta/';
+const getMoveAlphaBetaCustomAiURL = 'http://127.0.0.1:8000/alphaBetaCustom/';
+const defaultDepth = 3;
+
+  const setWaitAiMove = createAction('SET_WAIT_AI_MOVE');
+
+  const unsetWaitAiMove = createAction('UNSET_WAIT_AI_MOVE');
+
+  const setAvailableMoves = createAction('SET_AVAILABLE_MOVES_BUILDS');
+
+function getAvailableMoves(url) {
+  return (dispatch, getState) => {
+    const state = getState().gameState;
+    const data = createJsonRequestAvailableMoves(state);
+
+    axios
+      .post(url, data)
+      .then(response => response.data.moves.map(x => x[0] * 5 + x[1]))
+      .then(formattedResponse =>
+        dispatch(
+          setAvailableMoves({availableMovesOrBuilds: formattedResponse}),
+        ),
+      )
+      .catch(err => console.log(err));
+  };
+}
+
+function getAiMove(url, depth) {
+  return (dispatch, getState) => {
+    const state = getState().gameState;
+    const data = createJsonRequestAiMove(state, depth);
+    dispatch(setWaitAiMove());
+
+    axios
+      .post(url, data)
+      .then(response => {
+        const buildersID = response.data.id;
+        const move = response.data.move[0] * 5 + response.data.move[1];
+        const build = response.data.build[0] * 5 + response.data.build[1];
+        const coordinatesMoveFrom =
+          buildersID === 1 ? this.state.firstHE : this.state.secondHE;
+        dispatch(moveBuilder({fromCell: coordinatesMoveFrom, toCell: move}));
+        dispatch(buildBlock({onCell: build}));
+        dispatch(unsetWaitAiMove());
+      })
+      .catch(err => console.log(err));
+  };
+}
+
+  function doPlayerMove(idOfCell) {
+  return (dispatch, getState) => {
+    const engineState = getState().gameEngineState.gameState;
+    const gameState = getState().gameState;
+
+    switch (engineState) {
+      case GameStatesEnum.SETTING_UP_BUILDERS:
+        dispatch(setUpBuilder(idOfCell));
+        return;
+      case GameStatesEnum.CHOOSING_BUILDER:
+        dispatch(selectBuilder(idOfCell));
+        dispatch(getAvailableMoves(getAvailableMovesURL));
+        return;
+      case GameStatesEnum.CHOOSING_MOVE:
+        if (idOfCell === gameState.selected) {
+          dispatch(unselectBuilder());
+        } else {
+          dispatch(moveBuilder(idOfCell));
+          dispatch(getAvailableMoves(getAvailableBuildsURL));
+        }
+        return;
+      case GameStatesEnum.CHOOSING_BUILD:
+        dispatch(buildBlock(idOfCell));
+        return;
+      case GameStatesEnum.WAITING_AI_MOVE:
+        dispatch(getAiMove(getMoveAlphaBetaCustomAiURL, defaultDepth));
+        return;
+      case GameStatesEnum.WAITING_AVAILABLE_MOVES:
+        return;
+    }
+  };
+}
+
+
+function alertMessage(message) {
+  Alert.Alert('Warning', message, [{text: 'OK'}]);
+}
+
+
+  const moveBuilder = createAction('MOVE_BUILDER');
+
+  const buildBlock = createAction('BUILD_BLOCK');
+
+  const selectBuilder = createAction('SELECT_BUILDER');
+
+  const unselectBuilder = createAction('UNSELECT_BUILDER');
+
+  const setUpBuilder = createAction('SET_UP_BUILDER');
+
+
+
+const initState = {
+  cells: Array(25).fill(0),
+  firstHE: -1,
+  secondHE: -1,
+  firstJU: -1,
+  secondJU: -1,
+  selected: -1,
+  availableMovesOrBuilds: [],
+};
+
+const mainReducer = createReducer(initState, {
+  [setUpBuilder]: (state, action) => {
+    console.log('HAHAYAWFDHUWQUFQFGBQGQQGQGBQQGQGQ');
+    const {cellIndex} = action.payload;
+
+    if (state.cells[cellIndex] === 0) {
+      if (state.firstJu === -1) {
+        state.firstJu = cellIndex;
+        state.gameState = GameStatesEnum.SETTING_UP_BUILDERS;
+      } else {
+        state.secondJu = cellIndex;
+        state.gameState = GameStatesEnum.WAITING_AI_MOVE;
+      }
+
+      state.cells[cellIndex] = 9;
+    } else {
+      alertMessage('This cell is already taken, please try again.');
+    }
+  },
+  [selectBuilder]: (state, action) => {
+    const {selectedId} = action.payload;
+
+    if (selectedId !== state.firstJu || selectedId !== state.secondJu) {
+      alertMessage('Please choose your builder.');
+      return;
+    }
+
+    state.selected = selectedId;
+    state.gameState = GameStatesEnum.CHOOSING_MOVE;
+  },
+  [unselectBuilder]: (state, action) => {
+    state.selected = -1;
+    state.gameState = GameStatesEnum.CHOOSING_BUILDER;
+  },
+  [moveBuilder]: (state, action) => {
+    const {fromCell} = state.selected;
+    const {toCell} = action.payload;
+
+    if (state.availableMovesOrBuilds.find(x => x === toCell) === null) {
+      alertMessage('Cannot move builder here, please try again.');
+      return;
+    }
+
+    const multiplier = Math.floor((this.state.cells[fromCell] + 1) / 5);
+
+    state.cells[fromCell] =
+      state.cells[fromCell] >= 9
+        ? (state.cells[fromCell] + 1) % 5
+        : state.cells[fromCell] % 5;
+
+    state.cells[toCell] =
+      state.cells[toCell] >= 9
+        ? 5 * multiplier + state.cells[toCell] - 1
+        : 5 * multiplier + state.cells[toCell];
+
+    state.gameState = GameStatesEnum.CHOOSING_BUILD;
+  },
+  [buildBlock]: (state, action) => {
+    const {onCell} = action.payload;
+
+    if (state.availableMovesOrBuilds.find(x => x === onCell) === null) {
+      alertMessage('Cannot build here, please try again.');
+      return;
+    }
+
+    state.cells[onCell] += 1;
+
+    state.selected = -1;
+    state.gameState = GameStatesEnum.WAITING_AI_MOVE;
+  },
+});
+
+function alertMessage(message) {
+  Alert.Alert('Warning', message, [{text: 'OK'}]);
+}
+
+
+const gameEngineReducerToBeDeleted = createReducer({
+  engineState: GameStatesEnum.SETTING_UP_BUILDERS,
+}, {
+  [setWaitAiMove]: (state, action) => {
+    state.gameState = GameStatesEnum.WAITING_AI_MOVE;
+  },
+  [unsetWaitAiMove]: (state, action) => {
+    state.gameState = GameStatesEnum.CHOOSING_BUILDER;
+  },
+  [setAvailableMoves]: (state, action) => {
+    state.availableMovesOrBuilds = action.payload.availableMovesOrBuilds;
+  },
+});
+
+
+
+const reducer = combineReducers({
+  gameEngineState: gameEngineReducerToBeDeleted,
+  gameState: mainReducer,
+});
+
+
+
+const middleware = [...getDefaultMiddleware(), thunk, logger];
+let preloadedState = {
+  gameEngineState: {
+    gameState: GameStatesEnum.SETTING_UP_BUILDERS,
+  },
+  gameState: {
+    cells: Array(25).fill(0),
+    firstHE: -1,
+    secondHE: -1,
+    firstJU: -1,
+    secondJU: -1,
+    selected: -1,
+    availableMovesOrBuilds: [],
+  },
+};
+
+const store = configureStore({
+  reducer: reducer,
+  middleware: middleware,
+  preloadedState: preloadedState,
+});
+
+

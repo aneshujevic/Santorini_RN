@@ -1,11 +1,9 @@
 import {combineReducers} from 'redux';
 
-import gameEngineReducer from './gameEngineReducer';
-import playerMoveReducer from './playerMoveReducer';
+import mainReducer from './mainReducer';
 
 const reducer = combineReducers({
-  gameEngineState: gameEngineReducer,
-  gameState: playerMoveReducer,
+  gameState: mainReducer,
 });
 
 export default reducer;

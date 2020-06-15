@@ -1,9 +1,8 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {View, StyleSheet, Alert} from 'react-native';
+import {Alert, StyleSheet, View} from 'react-native';
 
 import Cell from '../components/Cell';
-import {setUpBuilder} from '../actions/playerMoveActions';
 import {doPlayerMove} from '../actions/gameEngineActions';
 
 function RootApp(props) {
@@ -15,30 +14,35 @@ function RootApp(props) {
         key={i * 5}
         stateOfCell={props.cells[i * 5]}
         selected={props.selected === i * 5}
+        glowing={props.glowing[i * 5]}
         onPress={() => props.click(i * 5)}
       />,
       <Cell
         key={i * 5 + 1}
         stateOfCell={props.cells[i * 5 + 1]}
         selected={props.selected === i * 5 + 1}
+        glowing={props.glowing[i * 5 + 1]}
         onPress={() => props.click(i * 5 + 1)}
       />,
       <Cell
         key={i * 5 + 2}
         stateOfCell={props.cells[i * 5 + 2]}
         selected={props.selected === i * 5 + 2}
+        glowing={props.glowing[i * 5 + 2]}
         onPress={() => props.click(i * 5 + 2)}
       />,
       <Cell
         key={i * 5 + 3}
         stateOfCell={props.cells[i * 5 + 3]}
         selected={props.selected === i * 5 + 3}
+        glowing={props.glowing[i * 5 + 3]}
         onPress={() => props.click(i * 5 + 3)}
       />,
       <Cell
         key={i * 5 + 4}
         stateOfCell={props.cells[i * 5 + 4]}
         selected={props.selected === i * 5 + 4}
+        glowing={props.glowing[i * 5 + 4]}
         onPress={() => props.click(i * 5 + 4)}
       />,
     );
@@ -78,6 +82,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => ({
   cells: state.gameState.cells,
   selected: state.gameState.selected,
+  glowing: state.gameState.glowingCells,
 });
 
 const mapDispatchToProps = dispatch => ({

@@ -16,7 +16,7 @@ const Cell = props => (
   <View style={[styles.container]}>
     <TouchableOpacity
       style={[
-        props.selected ? styles.selected : styles.available,
+        props.selected ? styles.selected : (props.glowing ? styles.glowing : styles.available),
         styles.touchable,
       ]}
       onPress={props.onPress}>
@@ -56,7 +56,20 @@ const styles = StyleSheet.create({
   selected: {
     borderColor: 'rgba(36,248,42,0.6)',
     borderStyle: 'solid',
-    borderWidth: 5,
+    borderWidth: 3,
+  },
+  glowing: {
+    borderColor: 'rgba(36,248,42,0.6)',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
+    shadowOpacity: 0.55,
+    shadowRadius: 16,
+    elevation: 24,
   },
 });
 

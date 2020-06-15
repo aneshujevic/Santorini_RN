@@ -6,18 +6,19 @@ import reducer from '../reducers/rootReducer';
 import {GameStatesEnum} from '../gameStatesEnum';
 
 const middleware = [...getDefaultMiddleware(), thunk, logger];
+
 let preloadedState = {
-  gameEngineState: {
-    gameState: GameStatesEnum.SETTING_UP_BUILDERS,
-  },
   gameState: {
+    gameEngineState: GameStatesEnum.SETTING_UP_BUILDERS,
     cells: Array(25).fill(0),
-    firstHE: -1,
-    secondHE: -1,
-    firstJU: -1,
-    secondJU: -1,
+    firstHe: -1,
+    secondHe: -1,
+    firstJu: -1,
+    secondJu: -1,
     selected: -1,
     availableMovesOrBuilds: [],
+    glowingCells: Array(25).fill(false),
+    gameEnded: false,
   },
 };
 
