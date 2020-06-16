@@ -14,24 +14,24 @@ import {
   unselectBuilder,
 } from './playerMoveActions';
 import {GameStatesEnum} from '../gameStatesEnum';
-import Alert from 'react-native';
+import {alertMessage, dialogueNewGame} from '../utils';
 
 const getAvailableMovesURL = 'http://10.0.2.2:8000/getAvailableMoves/';
 const getAvailableBuildsURL = 'http://10.0.2.2:8000/getAvailableBuilds/';
 const getMoveMinmaxAiURL = 'http://10.0.2.2:8000/minimax/';
 const getMoveAlphaBetaAiURL = 'http://10.0.2.2:8000/alphaBeta/';
 const getMoveAlphaBetaCustomAiURL = 'http://10.0.2.2:8000/alphaBetaCustom/';
-const defaultDepth = 3;
-
-export const setWaitAiMove = createAction('SET_WAIT_AI_MOVE');
-
-export const unsetWaitAiMove = createAction('UNSET_WAIT_AI_MOVE');
+const defaultDepth = 4;
 
 export const setAvailableMoves = createAction('SET_AVAILABLE_MOVES_BUILDS');
 
 export const setUpAiBuilders = createAction('SET_UP_AI_BUILDERS');
 
+export const changeGameEngineState = createAction('CHANGE_GAME_ENGINE_STATE');
+
 export const checkWin = createAction('CHECK_WIN');
+
+export const resetMovesGlowing = createAction('RESET_GLOWING_MOVES');
 
 function getAvailableMoves(url, customBuilderCoords: undefined) {
   return (dispatch, getState) => {
@@ -41,11 +41,12 @@ function getAvailableMoves(url, customBuilderCoords: undefined) {
     axios
       .post(url, data)
       .then(response => response.data.moves.map(x => x[0] * 5 + x[1]))
-      .then(formattedResponse =>
+      .then(formattedResponse => {
+        console.log(formattedResponse);
         dispatch(
           setAvailableMoves({availableMovesOrBuilds: formattedResponse}),
-        ),
-      )
+        );
+      })
       .catch(err => console.log(err));
   };
 }
@@ -55,7 +56,7 @@ function getAiMove(url, depth) {
     const state = getState().gameState;
 
     const data = createJsonRequestAiMove(state, depth);
-    dispatch(setWaitAiMove());
+    dispatch(changeGameEngineState(GameStatesEnum.WAITING_AI_MOVE));
 
     axios
       .post(url, data)
@@ -72,8 +73,8 @@ function getAiMove(url, depth) {
             fromAi: true,
           }),
         );
-        dispatch(buildBlock({fromAi: true, onCell: build}));
-        dispatch(unsetWaitAiMove());
+        dispatch(buildBlock({onCell: build}));
+        dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILDER));
         dispatch(checkWinTrigger());
       })
       .catch(err => console.log(err));
@@ -115,6 +116,7 @@ function setUpAiBuildersTrigger() {
     }
 
     dispatch(setUpAiBuilders({firstHe: firstHe, secondHe: secondHe}));
+    dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILDER));
   };
 }
 
@@ -124,36 +126,43 @@ function checkWinTrigger() {
       return;
     }
 
-    let firstJU = state.firstJU;
-    let secondJU = state.secondJU;
-    let firstHE = state.firstHE;
-    let secondHE = state.secondHE;
+    // let firstJU = state.firstJu;
+    // let secondJU = state.secondJu;
+    // let firstHE = state.firstHe;
+    // let secondHE = state.secondHe;
     let gameEnded = false;
 
-    if (
-      getAvailableMoves(getAvailableMovesURL, firstJU).length === 0 &&
-      getAvailableMoves(getAvailableMovesURL, secondJU).length === 0
-    ) {
-      gameEnded = true;
-      alertMessage('AI won!');
-    } else if (
-      getAvailableMoves(getAvailableMovesURL, firstHE).length === 0 &&
-      getAvailableMoves(getAvailableMovesURL, secondHE).length === 0
-    ) {
-      gameEnded = true;
-      alertMessage('Human won!');
-    }
+    // TODO: solve the bug around here Array[0] = 0 as response ? or implement a check :)
+    // if (
+    //   dispatch(getAvailableMoves(getAvailableMovesURL, firstJU)) &&
+    //   state.availableMovesOrBuilds.length === 0 &&
+    //   dispatch(getAvailableMoves(getAvailableMovesURL, secondJU)) &&
+    //   state.availableMovesOrBuilds.length === 0
+    // ) {
+    //   gameEnded = true;
+    //   alertMessage('AI won!!!!');
+    // } else if (
+    //   dispatch(getAvailableMoves(getAvailableMovesURL, firstHE)) &&
+    //   state.availableMovesOrBuilds.length === 0 &&
+    //   dispatch(getAvailableMoves(getAvailableMovesURL, secondHE)) &&
+    //   state.availableMovesOrBuilds.length === 0
+    // ) {
+    //   gameEnded = true;
+    //   alertMessage('Human won!!!!!');
+    // }
 
     dispatch(checkWin(gameEnded));
+    // dispatch(resetMovesGlowing());
   };
 }
 
-export function doPlayerMove(idOfCell) {
+export function doPlayerMoveHuAi(idOfCell) {
   return (dispatch, getState) => {
     const engineState = getState().gameState.gameEngineState;
     const gameState = getState().gameState;
 
     if (gameState.gameEnded) {
+      dialogueNewGame('The party is over, start another one?');
       return;
     }
 
@@ -164,30 +173,57 @@ export function doPlayerMove(idOfCell) {
           getState().gameState.gameEngineState ===
           GameStatesEnum.WAITING_AI_SETUP_MOVES
         ) {
-          dispatch(doPlayerMove());
+          dispatch(doPlayerMoveHuAi());
         }
         return;
       case GameStatesEnum.CHOOSING_BUILDER:
+        if (idOfCell !== gameState.firstJu && idOfCell !== gameState.secondJu) {
+          alertMessage('Please choose your builder.');
+          return;
+        }
+
         dispatch(selectBuilder(idOfCell));
+        dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_MOVE));
         dispatch(getAvailableMoves(getAvailableMovesURL));
         return;
       case GameStatesEnum.CHOOSING_MOVE:
         if (idOfCell === gameState.selected) {
           dispatch(unselectBuilder());
+          dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILDER));
         } else {
+          if (
+            gameState.availableMovesOrBuilds.find(x => x === idOfCell) ===
+            undefined
+          ) {
+            alertMessage('Cannot move builder here, please try again.');
+            return;
+          }
           dispatch(moveBuilder({toCell: idOfCell}));
+          dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILD));
+          dispatch(checkWinTrigger());
           dispatch(getAvailableMoves(getAvailableBuildsURL));
         }
         return;
       case GameStatesEnum.CHOOSING_BUILD:
+        if (
+          gameState.availableMovesOrBuilds.find(x => x === idOfCell) ===
+          undefined
+        ) {
+          alertMessage('Cannot build here, please try again.');
+          return;
+        }
+
         dispatch(buildBlock({onCell: idOfCell}));
+        dispatch(changeGameEngineState(GameStatesEnum.DO_AI_MOVE));
+
         if (idOfCell) {
-          dispatch(doPlayerMove());
-          dispatch(checkWinTrigger());
+          dispatch(doPlayerMoveHuAi());
         }
         return;
-      case GameStatesEnum.WAITING_AI_MOVE:
+      case GameStatesEnum.DO_AI_MOVE:
         dispatch(getAiMove(getMoveAlphaBetaCustomAiURL, defaultDepth));
+        return;
+      case GameStatesEnum.WAITING_AI_MOVE:
         return;
       case GameStatesEnum.WAITING_AVAILABLE_MOVES:
         return;
@@ -196,8 +232,4 @@ export function doPlayerMove(idOfCell) {
         return;
     }
   };
-}
-
-function alertMessage(message) {
-  Alert.Alert('Warning', message, [{text: 'OK'}]);
 }

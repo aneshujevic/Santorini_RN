@@ -1,9 +1,9 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {Alert, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import Cell from '../components/Cell';
-import {doPlayerMove} from '../actions/gameEngineActions';
+import {doPlayerMoveHuAi} from '../actions/gameEngineActions';
 
 function RootApp(props) {
   const rows = [[], [], [], [], []];
@@ -59,12 +59,6 @@ function RootApp(props) {
   );
 }
 
-function alertMessage(id) {
-  Alert.alert('ALERT', id.toString(), [
-    {text: 'OK', onPress: () => console.log('ok pressed')},
-  ]);
-}
-
 const styles = StyleSheet.create({
   matrix: {
     flex: 1,
@@ -87,7 +81,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   click: idOfCell => {
-    dispatch(doPlayerMove(idOfCell));
+    dispatch(doPlayerMoveHuAi(idOfCell));
   },
 });
 
