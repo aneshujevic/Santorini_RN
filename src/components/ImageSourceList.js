@@ -12,4 +12,5 @@ export const imageList = [
   require('../../static/images/lvl_1_JU.png'),
   require('../../static/images/lvl_2_JU.png'),
   require('../../static/images/lvl_3_JU.png'),
+  require('../../static/images/background.jpeg'),
 ];

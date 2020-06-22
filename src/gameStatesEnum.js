@@ -8,3 +8,9 @@ export const GameStatesEnum = Object.freeze({
   WAITING_AVAILABLE_MOVES: 6,
   DO_AI_MOVE: 7,
 });
+
+export const GameTypesEnum = Object.freeze({
+  HUMAN_VS_AI: 0,
+  AI_VS_AI: 1,
+  HUMAN_VS_HUMAN: 2,
+});

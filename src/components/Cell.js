@@ -14,17 +14,25 @@ import {
 
 const Cell = props => (
   <View style={[styles.container]}>
-    <TouchableOpacity
-      style={[
-        props.selected ? styles.selected : (props.glowing ? styles.glowing : styles.available),
-        styles.touchable,
-      ]}
-      onPress={props.onPress}>
-      <ImageBackground
-        source={imageList[props.stateOfCell]}
-        style={[styles.image]}
-      />
-    </TouchableOpacity>
+    <ImageBackground
+    source={imageList[0]}
+    style={styles.image}>
+      <TouchableOpacity
+        style={[
+          props.selected
+            ? styles.selected
+            : props.glowing
+            ? styles.glowing
+            : styles.available,
+          styles.touchable,
+        ]}
+        onPress={props.onPress}>
+        <ImageBackground
+          source={imageList[props.stateOfCell]}
+          style={[styles.image]}
+        />
+      </TouchableOpacity>
+    </ImageBackground>
   </View>
 );
 
@@ -37,13 +45,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    margin: 5,
+    margin: 3,
+    backgroundColor: 'white',
   },
   touchable: {
     flex: 1,
   },
   image: {
     borderWidth: 0.5,
+    borderColor: 'rgba(0,0,0,0.24)',
     flex: 1,
     width: null,
     height: null,

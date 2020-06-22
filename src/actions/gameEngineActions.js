@@ -16,11 +16,12 @@ import {
 import {GameStatesEnum} from '../gameStatesEnum';
 import {alertMessage, dialogueNewGame} from '../utils';
 
-const getAvailableMovesURL = 'http://10.0.2.2:8000/getAvailableMoves/';
-const getAvailableBuildsURL = 'http://10.0.2.2:8000/getAvailableBuilds/';
+// const getAvailableMovesURL = 'http://10.0.2.2:8000/getAvailableMoves/';
+const getAvailableMovesURL = 'http://192.168.0.104:8000/getAvailableMoves/';
+const getAvailableBuildsURL = 'http://192.168.0.104:8000/getAvailableBuilds/';
 const getMoveMinmaxAiURL = 'http://10.0.2.2:8000/minimax/';
 const getMoveAlphaBetaAiURL = 'http://10.0.2.2:8000/alphaBeta/';
-const getMoveAlphaBetaCustomAiURL = 'http://10.0.2.2:8000/alphaBetaCustom/';
+const getMoveAlphaBetaCustomAiURL = 'http://192.168.0.104:8000/alphaBetaCustom/';
 const defaultDepth = 4;
 
 export const setAvailableMoves = createAction('SET_AVAILABLE_MOVES_BUILDS');
@@ -32,6 +33,10 @@ export const changeGameEngineState = createAction('CHANGE_GAME_ENGINE_STATE');
 export const checkWin = createAction('CHECK_WIN');
 
 export const resetMovesGlowing = createAction('RESET_GLOWING_MOVES');
+
+export const resetState = createAction('RESET_STATE');
+
+export const setGameType = createAction('SET_GAME_TYPE');
 
 function getAvailableMoves(url, customBuilderCoords: undefined) {
   return (dispatch, getState) => {

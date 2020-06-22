@@ -6,13 +6,17 @@ import {
   changeGameEngineState,
   checkWin,
   resetMovesGlowing,
+  resetState,
   setAvailableMoves,
+  setGameType,
   setUpAiBuilders,
 } from '../actions/gameEngineActions';
 import {alertMessage, dialogueNewGame} from '../utils';
+import {preloadedState} from '../store/preloadedState';
 
 const initState = {
   gameEngineState: GameStatesEnum.SETTING_UP_BUILDERS,
+  gameType: undefined,
   cells: Array(25).fill(0),
   firstHe: -1,
   secondHe: -1,
@@ -128,6 +132,12 @@ const mainReducer = createReducer(initState, {
   [resetMovesGlowing]: (state, action) => {
     state.availableMovesOrBuilds = Array(25).fill(0);
     state.glowingCells = Array(25).fill(false);
+  },
+  [resetState]: (state, action) => {
+    state.gameState = preloadedState.gameState;
+  },
+  [setGameType]: (state, action) => {
+    state.gameType = action.payload;
   },
 });
 
