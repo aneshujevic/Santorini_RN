@@ -1,7 +1,5 @@
 import React from 'react';
 import {PropTypes} from 'prop-types';
-import {imageList} from './ImageSourceList';
-
 import {
   TouchableOpacity,
   ImageBackground,
@@ -9,14 +7,11 @@ import {
   View,
 } from 'react-native';
 
-// TODO: Connect with image wrapper
-// TODO: Finish propTypes
+import {imageList} from './ImageSourceList';
 
 const Cell = props => (
   <View style={[styles.container]}>
-    <ImageBackground
-    source={imageList[0]}
-    style={styles.image}>
+    <ImageBackground source={imageList[0]} style={styles.image}>
       <TouchableOpacity
         style={[
           props.selected
@@ -39,6 +34,7 @@ const Cell = props => (
 Cell.propTypes = {
   stateOfCell: PropTypes.number.isRequired,
   selected: PropTypes.bool.isRequired,
+  glowing: PropTypes.bool.isRequired,
 };
 
 const styles = StyleSheet.create({

@@ -1,11 +1,14 @@
 import {Alert} from 'react-native';
-import RNRestart from 'react-native-restart';
+import {resetState} from './actions/gameEngineActions';
 
 export const alertMessage = message =>
-  Alert.alert('ALERT', message, [{text: 'OK'}]);
+  Alert.alert('Notification', message, [{text: 'OK'}]);
 
-export const dialogueNewGame = message =>
-  Alert.alert('Notification', message, [
-    {text: 'Yes', onPress: () => RNRestart.Restart()},
-    {text: 'No'},
-  ]);
+export function dialogueNewGame(message) {
+  return (dispatch, getState) => {
+    Alert.alert('Notification', message, [
+      {text: 'Yes', onPress: () => dispatch(resetState())},
+      {text: 'No'},
+    ]);
+  };
+}

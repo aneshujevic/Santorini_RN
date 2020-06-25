@@ -1,58 +1,95 @@
 import React from 'react';
-import {StyleSheet} from 'react-native';
-import {Text, TouchableOpacity, View, ImageBackground} from 'react-native';
-import RNRestart from 'react-native-restart';
+import {
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {PropTypes} from 'prop-types';
+import {connect} from 'react-redux';
+
 import {imageList} from '../components/ImageSourceList';
 import {GameTypesEnum} from '../gameStatesEnum';
+import {setGameType} from '../actions/gameEngineActions';
 
-export const Menu = ({navigation}) => (
+const Menu = props => (
   <View style={styles.containerView}>
     <ImageBackground source={imageList[13]} style={styles.backgroundStyle}>
       <View style={styles.mainMenu}>
-        <TouchableOpacity onPress={() => navigation.navigate('Game', {type: GameTypesEnum.HUMAN_VS_AI})}>
+        <TouchableOpacity
+          onPress={() => {
+            props.navigation.navigate('Game');
+            props.setGameType(GameTypesEnum.HUMAN_VS_AI);
+          }}>
           <Text style={styles.menuItem}>Human vs AI mode</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('Game', {type: GameTypesEnum.AI_VS_AI})
-          }>
+          onPress={() => {
+            props.navigation.navigate('Game');
+            props.setGameType(GameTypesEnum.HUMAN_VS_HUMAN);
+          }}>
+          <Text style={styles.menuItem}>Human vs Human mode</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            props.navigation.navigate('Game');
+            props.setGameType(GameTypesEnum.AI_VS_AI);
+          }}>
           <Text style={styles.menuItem}>AI vs AI mode</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Game', {type: GameTypesEnum.HUMAN_VS_HUMAN})}>
-          <Text style={styles.menuItem}>Human vs Human mode</Text>
+        <TouchableOpacity onPress={() => props.navigation.navigate('Settings')}>
+          <Text style={[styles.menuItem, styles.settingsItem]}>Settings</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
   </View>
 );
 
+Menu.propTypes = {
+  setGameType: PropTypes.func.isRequired,
+  navigation: PropTypes.object.isRequired,
+};
+
 const styles = StyleSheet.create({
   containerView: {
     flex: 1,
-    flexDirection: 'column',
+    flexDirection: 'row',
     width: '100%',
     height: '100%',
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'center',
   },
   mainMenu: {
-    marginTop: 25,
-    marginBottom: 45,
-    flex: 3,
+    flex: 4,
     flexDirection: 'column',
-    justifyContent: 'space-around',
+    alignItems: 'stretch',
+    justifyContent: 'space-evenly',
   },
   menuItem: {
     textAlign: 'center',
     fontSize: 20,
-    padding: 15,
+    padding: 20,
+    borderRadius: 3,
     fontFamily: 'monospace',
     color: 'white',
-    backgroundColor: 'rgba(0,82,23,0.71)',
+    backgroundColor: 'rgba(0,79,82,0.75)',
   },
   backgroundStyle: {
     flex: 1,
     height: '100%',
     width: '100%',
   },
+  settingsItem: {
+    fontSize: 17,
+    borderRadius: 1,
+    padding: 10,
+  },
 });
+
+export default connect(
+  null,
+  dispatch => ({
+    setGameType: gameType => dispatch(setGameType(gameType)),
+  }),
+)(Menu);

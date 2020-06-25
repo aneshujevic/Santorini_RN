@@ -1,32 +1,11 @@
 import {createAction} from '@reduxjs/toolkit';
-import axios from 'axios';
-
-import {
-  createJsonRequestAiMove,
-  createJsonRequestAvailableMoves,
-} from '../server_communication/serializers';
-
-import {
-  buildBlock,
-  moveBuilder,
-  selectBuilder,
-  setUpBuilder,
-  unselectBuilder,
-} from './playerMoveActions';
 import {GameStatesEnum} from '../gameStatesEnum';
-import {alertMessage, dialogueNewGame} from '../utils';
-
-// const getAvailableMovesURL = 'http://10.0.2.2:8000/getAvailableMoves/';
-const getAvailableMovesURL = 'http://192.168.0.104:8000/getAvailableMoves/';
-const getAvailableBuildsURL = 'http://192.168.0.104:8000/getAvailableBuilds/';
-const getMoveMinmaxAiURL = 'http://10.0.2.2:8000/minimax/';
-const getMoveAlphaBetaAiURL = 'http://10.0.2.2:8000/alphaBeta/';
-const getMoveAlphaBetaCustomAiURL = 'http://192.168.0.104:8000/alphaBetaCustom/';
-const defaultDepth = 4;
+import {setUpJuBuilder} from './playerMoveActions';
+import {dialogueNewGame} from '../utils';
 
 export const setAvailableMoves = createAction('SET_AVAILABLE_MOVES_BUILDS');
 
-export const setUpAiBuilders = createAction('SET_UP_AI_BUILDERS');
+export const setUpHeBuilder = createAction('SET_UP_HE_BUILDERS');
 
 export const changeGameEngineState = createAction('CHANGE_GAME_ENGINE_STATE');
 
@@ -38,55 +17,7 @@ export const resetState = createAction('RESET_STATE');
 
 export const setGameType = createAction('SET_GAME_TYPE');
 
-function getAvailableMoves(url, customBuilderCoords: undefined) {
-  return (dispatch, getState) => {
-    const state = getState().gameState;
-    const data = createJsonRequestAvailableMoves(customBuilderCoords, state);
-
-    axios
-      .post(url, data)
-      .then(response => response.data.moves.map(x => x[0] * 5 + x[1]))
-      .then(formattedResponse => {
-        console.log(formattedResponse);
-        dispatch(
-          setAvailableMoves({availableMovesOrBuilds: formattedResponse}),
-        );
-      })
-      .catch(err => console.log(err));
-  };
-}
-
-function getAiMove(url, depth) {
-  return (dispatch, getState) => {
-    const state = getState().gameState;
-
-    const data = createJsonRequestAiMove(state, depth);
-    dispatch(changeGameEngineState(GameStatesEnum.WAITING_AI_MOVE));
-
-    axios
-      .post(url, data)
-      .then(response => {
-        const buildersID = response.data.id;
-        const move = response.data.move[0] * 5 + response.data.move[1];
-        const build = response.data.build[0] * 5 + response.data.build[1];
-        const coordinatesMoveFrom =
-          buildersID === 1 ? state.firstHe : state.secondHe;
-        dispatch(
-          moveBuilder({
-            fromCell: coordinatesMoveFrom,
-            toCell: move,
-            fromAi: true,
-          }),
-        );
-        dispatch(buildBlock({onCell: build}));
-        dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILDER));
-        dispatch(checkWinTrigger());
-      })
-      .catch(err => console.log(err));
-  };
-}
-
-function setUpAiBuildersTrigger() {
+export function setUpAiBuildersTrigger() {
   return (dispatch, getState) => {
     const state = getState().gameState;
     const firstJULocal = state.firstJu;
@@ -120,14 +51,37 @@ function setUpAiBuildersTrigger() {
       }
     }
 
-    dispatch(setUpAiBuilders({firstHe: firstHe, secondHe: secondHe}));
+    dispatch(setUpHeBuilder(firstHe));
+    dispatch(setUpHeBuilder(secondHe));
     dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILDER));
   };
 }
 
-function checkWinTrigger() {
-  return (dispatch, state) => {
-    if (state.gameEnded) {
+export function setUpAiAiBuildersTrigger() {
+  return dispatch => {
+    const indexes = [];
+
+    for (let i = 0; i < 4; ) {
+      let newIndex = Math.floor(Math.random() * 25);
+
+      if (indexes.indexOf(newIndex) === -1) {
+        indexes.push(newIndex);
+        i++;
+      }
+    }
+
+    dispatch(setUpJuBuilder(indexes[0]));
+    dispatch(setUpJuBuilder(indexes[2]));
+    dispatch(setUpHeBuilder(indexes[1]));
+    dispatch(setUpHeBuilder(indexes[3]));
+    dispatch(changeGameEngineState(GameStatesEnum.DO_AI_MOVE));
+  };
+}
+
+export function checkWinTrigger() {
+  return (dispatch, getState) => {
+    if (getState().gameState.gameEnded) {
+      dispatch(dialogueNewGame('Do you want to play another game?'));
       return;
     }
 
@@ -158,83 +112,5 @@ function checkWinTrigger() {
 
     dispatch(checkWin(gameEnded));
     // dispatch(resetMovesGlowing());
-  };
-}
-
-export function doPlayerMoveHuAi(idOfCell) {
-  return (dispatch, getState) => {
-    const engineState = getState().gameState.gameEngineState;
-    const gameState = getState().gameState;
-
-    if (gameState.gameEnded) {
-      dialogueNewGame('The party is over, start another one?');
-      return;
-    }
-
-    switch (engineState) {
-      case GameStatesEnum.SETTING_UP_BUILDERS:
-        dispatch(setUpBuilder(idOfCell));
-        if (
-          getState().gameState.gameEngineState ===
-          GameStatesEnum.WAITING_AI_SETUP_MOVES
-        ) {
-          dispatch(doPlayerMoveHuAi());
-        }
-        return;
-      case GameStatesEnum.CHOOSING_BUILDER:
-        if (idOfCell !== gameState.firstJu && idOfCell !== gameState.secondJu) {
-          alertMessage('Please choose your builder.');
-          return;
-        }
-
-        dispatch(selectBuilder(idOfCell));
-        dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_MOVE));
-        dispatch(getAvailableMoves(getAvailableMovesURL));
-        return;
-      case GameStatesEnum.CHOOSING_MOVE:
-        if (idOfCell === gameState.selected) {
-          dispatch(unselectBuilder());
-          dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILDER));
-        } else {
-          if (
-            gameState.availableMovesOrBuilds.find(x => x === idOfCell) ===
-            undefined
-          ) {
-            alertMessage('Cannot move builder here, please try again.');
-            return;
-          }
-          dispatch(moveBuilder({toCell: idOfCell}));
-          dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILD));
-          dispatch(checkWinTrigger());
-          dispatch(getAvailableMoves(getAvailableBuildsURL));
-        }
-        return;
-      case GameStatesEnum.CHOOSING_BUILD:
-        if (
-          gameState.availableMovesOrBuilds.find(x => x === idOfCell) ===
-          undefined
-        ) {
-          alertMessage('Cannot build here, please try again.');
-          return;
-        }
-
-        dispatch(buildBlock({onCell: idOfCell}));
-        dispatch(changeGameEngineState(GameStatesEnum.DO_AI_MOVE));
-
-        if (idOfCell) {
-          dispatch(doPlayerMoveHuAi());
-        }
-        return;
-      case GameStatesEnum.DO_AI_MOVE:
-        dispatch(getAiMove(getMoveAlphaBetaCustomAiURL, defaultDepth));
-        return;
-      case GameStatesEnum.WAITING_AI_MOVE:
-        return;
-      case GameStatesEnum.WAITING_AVAILABLE_MOVES:
-        return;
-      case GameStatesEnum.WAITING_AI_SETUP_MOVES:
-        dispatch(setUpAiBuildersTrigger());
-        return;
-    }
   };
 }

@@ -1,7 +1,14 @@
 import {createReducer} from '@reduxjs/toolkit';
 
-import {buildBlock, moveBuilder, selectBuilder, setUpBuilder, unselectBuilder} from '../actions/playerMoveActions';
-import {GameStatesEnum} from '../gameStatesEnum';
+import {
+  buildBlock,
+  moveBuilder,
+  selectBuilder,
+  setUpJuBuilder,
+  toggleMinNext,
+  unselectBuilder,
+} from '../actions/playerMoveActions';
+import {GameStatesEnum, GameTypesEnum} from '../gameStatesEnum';
 import {
   changeGameEngineState,
   checkWin,
@@ -9,27 +16,13 @@ import {
   resetState,
   setAvailableMoves,
   setGameType,
-  setUpAiBuilders,
+  setUpHeBuilder,
 } from '../actions/gameEngineActions';
 import {alertMessage, dialogueNewGame} from '../utils';
 import {preloadedState} from '../store/preloadedState';
 
-const initState = {
-  gameEngineState: GameStatesEnum.SETTING_UP_BUILDERS,
-  gameType: undefined,
-  cells: Array(25).fill(0),
-  firstHe: -1,
-  secondHe: -1,
-  firstJu: -1,
-  secondJu: -1,
-  selected: -1,
-  availableMovesOrBuilds: [],
-  glowingCells: Array(25).fill(false),
-  gameEnded: false,
-};
-
-const mainReducer = createReducer(initState, {
-  [setUpBuilder]: (state, action) => {
+const mainReducer = createReducer(preloadedState.gameState, {
+  [setUpJuBuilder]: (state, action) => {
     const cellIndex = action.payload;
 
     if (state.cells[cellIndex] === 0) {
@@ -97,14 +90,17 @@ const mainReducer = createReducer(initState, {
       glowingIndex => (state.glowingCells[glowingIndex] = true),
     );
   },
-  [setUpAiBuilders]: (state, action) => {
-    const firstHe = action.payload.firstHe;
-    const secondHe = action.payload.secondHe;
+  [setUpHeBuilder]: (state, action) => {
+    const cellIndex = action.payload;
 
-    state.firstHe = firstHe;
-    state.secondHe = secondHe;
-    state.cells[firstHe] = 5;
-    state.cells[secondHe] = 5;
+    if (state.cells[cellIndex] === 0) {
+      if (state.firstHe === -1) {
+        state.firstHe = cellIndex;
+      } else {
+        state.secondHe = cellIndex;
+      }
+      state.cells[cellIndex] = 5;
+    }
   },
   [changeGameEngineState]: (state, action) => {
     state.gameEngineState = action.payload;
@@ -118,26 +114,27 @@ const mainReducer = createReducer(initState, {
     const index = state.cells.findIndex(x => x === 12 || x === 8);
 
     if (index !== -1) {
-      switch (state.cells[index]) {
-        case 8:
-          dialogueNewGame('AI won!\nDo you want to play another game?');
-          break;
-        case 12:
-          dialogueNewGame('Human won!\nDo you want to play another game?');
-          break;
+      if (state.cells[index] === 8) {
+        alertMessage('AI won!');
+      } else {
+        alertMessage('Human won!');
       }
       state.gameEnded = true;
     }
   },
-  [resetMovesGlowing]: (state, action) => {
+  [resetMovesGlowing]: state => {
     state.availableMovesOrBuilds = Array(25).fill(0);
     state.glowingCells = Array(25).fill(false);
   },
-  [resetState]: (state, action) => {
-    state.gameState = preloadedState.gameState;
-  },
   [setGameType]: (state, action) => {
     state.gameType = action.payload;
+  },
+  [resetState]: state => {
+    state = preloadedState.gameState;
+    return state;
+  },
+  [toggleMinNext]: state => {
+    state.minNext = !state.minNext;
   },
 });
 

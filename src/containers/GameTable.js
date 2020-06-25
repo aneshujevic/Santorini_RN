@@ -1,11 +1,13 @@
 import React from 'react';
-import {ImageBackground, StyleSheet, View, Text} from 'react-native';
+import {ImageBackground, StyleSheet, View} from 'react-native';
+import {PropTypes} from 'prop-types';
+import {useFocusEffect} from '@react-navigation/native';
+import {connect} from 'react-redux';
 
 import Cell from '../components/Cell';
-import {doPlayerMoveHuAi, resetState, setGameType} from '../actions/gameEngineActions';
-import {connect} from 'react-redux';
+import {resetState} from '../actions/gameEngineActions';
 import {imageList} from '../components/ImageSourceList';
-import {GameTypesEnum} from '../gameStatesEnum';
+import {doMove} from '../actions/playerMoveActions';
 
 function GameTable(props) {
   const rows = [[], [], [], [], []];
@@ -50,11 +52,17 @@ function GameTable(props) {
     );
   }
 
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        props.resetGameState();
+      };
+    }, []),
+  );
+
   return (
     <View style={styles.matrix}>
       <ImageBackground source={imageList[13]} style={styles.backgroundStyle}>
-        // TODO: resi tip igre :)
-        <Text>{props.route.params.type}pa{props.gameType}</Text>
         <View style={styles.row}>{rows[0]}</View>
         <View style={styles.row}>{rows[1]}</View>
         <View style={styles.row}>{rows[2]}</View>
@@ -64,6 +72,14 @@ function GameTable(props) {
     </View>
   );
 }
+
+GameTable.propTypes = {
+  selected: PropTypes.number.isRequired,
+  glowing: PropTypes.array.isRequired,
+  cells: PropTypes.array.isRequired,
+  click: PropTypes.func.isRequired,
+  resetGameState: PropTypes.func.isRequired,
+};
 
 const styles = StyleSheet.create({
   matrix: {
@@ -91,9 +107,9 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   click: idOfCell => {
-    dispatch(doPlayerMoveHuAi(idOfCell));
+    dispatch(doMove(idOfCell));
   },
-  resetState: () => {
+  resetGameState: () => {
     dispatch(resetState());
   },
 });
