@@ -34,21 +34,23 @@ const styles = {
   gameScreen: {
     title: 'To main menu',
     headerStyle: {
-      backgroundColor: 'rgba(4,175,169,0.36)',
+      backgroundColor: 'rgba(0,79,82,0.75)',
       height: 35,
     },
     headerTitleStyle: {
       fontSize: 15,
+      color: 'white',
     },
   },
   settingsScreen: {
     title: 'To main menu',
     headerStyle: {
-      backgroundColor: 'rgba(4,175,169,0.36)',
+      backgroundColor: 'rgba(0,79,82,0.75)',
       height: 35,
     },
     headerTitleStyle: {
       fontSize: 15,
+      color: 'white',
     },
   },
 };

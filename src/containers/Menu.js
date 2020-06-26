@@ -12,32 +12,36 @@ import {connect} from 'react-redux';
 import {imageList} from '../components/ImageSourceList';
 import {GameTypesEnum} from '../gameStatesEnum';
 import {setGameType} from '../actions/gameEngineActions';
+import {MenuItem} from '../components/MenuItem';
 
 const Menu = props => (
   <View style={styles.containerView}>
     <ImageBackground source={imageList[13]} style={styles.backgroundStyle}>
       <View style={styles.mainMenu}>
-        <TouchableOpacity
-          onPress={() => {
+        <MenuItem
+          onPressItem={() => {
             props.navigation.navigate('Game');
             props.setGameType(GameTypesEnum.HUMAN_VS_AI);
-          }}>
-          <Text style={styles.menuItem}>Human vs AI mode</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            props.navigation.navigate('Game');
-            props.setGameType(GameTypesEnum.HUMAN_VS_HUMAN);
-          }}>
-          <Text style={styles.menuItem}>Human vs Human mode</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
+          }}
+          textStyle={styles.menuItem}
+          textValue={'Human vs AI mode'}
+        />
+        <MenuItem
+          onPressItem={() => {
             props.navigation.navigate('Game');
             props.setGameType(GameTypesEnum.AI_VS_AI);
-          }}>
-          <Text style={styles.menuItem}>AI vs AI mode</Text>
-        </TouchableOpacity>
+          }}
+          textStyle={styles.menuItem}
+          textValue={'AI vs AI mode'}
+        />
+        <MenuItem
+          onPressItem={() => {
+            props.navigation.navigate('Game');
+            props.setGameType(GameTypesEnum.HUMAN_VS_HUMAN);
+          }}
+          textStyle={styles.menuItem}
+          textValue={'Human vs Human mode'}
+        />
         <TouchableOpacity onPress={() => props.navigation.navigate('Settings')}>
           <Text style={[styles.menuItem, styles.settingsItem]}>Settings</Text>
         </TouchableOpacity>
@@ -53,15 +57,10 @@ Menu.propTypes = {
 
 const styles = StyleSheet.create({
   containerView: {
-    flex: 1,
-    flexDirection: 'row',
-    width: '100%',
     height: '100%',
-    alignItems: 'stretch',
-    justifyContent: 'center',
   },
   mainMenu: {
-    flex: 4,
+    flex: 1,
     flexDirection: 'column',
     alignItems: 'stretch',
     justifyContent: 'space-evenly',

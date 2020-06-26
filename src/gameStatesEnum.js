@@ -14,3 +14,9 @@ export const GameTypesEnum = Object.freeze({
   AI_VS_AI: 1,
   HUMAN_VS_HUMAN: 2,
 });
+
+export const Algorithms = Object.freeze({
+  MINIMAX: 'minimax',
+  ALPHA_BETA: 'alphaBeta',
+  ALPHA_BETA_CUSTOM_HEURISTICS: 'alphaBetaCustom',
+});

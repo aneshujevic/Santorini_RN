@@ -4,10 +4,16 @@ import {PropTypes} from 'prop-types';
 import {useFocusEffect} from '@react-navigation/native';
 import {connect} from 'react-redux';
 
-import Cell from '../components/Cell';
-import {resetState} from '../actions/gameEngineActions';
+import {Cell} from '../components/Cell';
+import {
+  resetState,
+  setAlgorithmType,
+  setDepth,
+} from '../actions/gameEngineActions';
 import {imageList} from '../components/ImageSourceList';
 import {doMove} from '../actions/playerMoveActions';
+import {ConfigBar} from '../components/ConfigBar';
+import {Algorithms} from '../gameStatesEnum';
 
 function GameTable(props) {
   const rows = [[], [], [], [], []];
@@ -68,17 +74,26 @@ function GameTable(props) {
         <View style={styles.row}>{rows[2]}</View>
         <View style={styles.row}>{rows[3]}</View>
         <View style={styles.row}>{rows[4]}</View>
+        <ConfigBar
+          selectedAlgorithm={props.selectedAlgorithm}
+          setAlgorithm={algorithm => props.setAlgorithm(algorithm)}
+          depthOfSearch={props.depthOfSearch}
+          setDepthOfSearch={depth => props.setDepth(depth)}
+        />
       </ImageBackground>
     </View>
   );
 }
 
 GameTable.propTypes = {
-  selected: PropTypes.number.isRequired,
-  glowing: PropTypes.array.isRequired,
-  cells: PropTypes.array.isRequired,
   click: PropTypes.func.isRequired,
+  cells: PropTypes.array.isRequired,
+  glowing: PropTypes.array.isRequired,
+  selected: PropTypes.number.isRequired,
+  depthOfSearch: PropTypes.string.isRequired,
+  selectedAlgorithm: PropTypes.string.isRequired,
   resetGameState: PropTypes.func.isRequired,
+  setAlgorithm: PropTypes.func.isRequired,
 };
 
 const styles = StyleSheet.create({
@@ -103,6 +118,8 @@ const mapStateToProps = state => ({
   cells: state.gameState.cells,
   selected: state.gameState.selected,
   glowing: state.gameState.glowingCells,
+  depthOfSearch: state.gameState.depth.toString(),
+  selectedAlgorithm: state.gameState.algorithmUri,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -111,6 +128,12 @@ const mapDispatchToProps = dispatch => ({
   },
   resetGameState: () => {
     dispatch(resetState());
+  },
+  setAlgorithm: algorithm => {
+    dispatch(setAlgorithmType(algorithm));
+  },
+  setDepth: depth => {
+    dispatch(setDepth(depth));
   },
 });
 

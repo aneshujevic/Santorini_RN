@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import {GameStatesEnum} from '../gameStatesEnum';
+import {Algorithms, GameStatesEnum} from '../gameStatesEnum';
 import {buildBlock, moveBuilder} from '../actions/playerMoveActions';
 import {
   createJsonRequestAiMove,
@@ -13,11 +13,14 @@ import {
 } from '../actions/gameEngineActions';
 import {alertMessage} from '../utils';
 
-export function getAndDoAiMove(url, depth, aiVsAiMode = false) {
+export function getAndDoAiMove(aiVsAiMode = false) {
   return (dispatch, getState) => {
     const state = getState().gameState;
-
+    const url = `${state.serverUrl}/${state.algorithmUri}/`;
+    const depth = state.depth;
     const data = createJsonRequestAiMove(state, depth, aiVsAiMode);
+
+    console.log(state.depth);
 
     axios
       .post(url, data)
@@ -26,12 +29,6 @@ export function getAndDoAiMove(url, depth, aiVsAiMode = false) {
         const move = response.data.move[0] * 5 + response.data.move[1];
         const build = response.data.build[0] * 5 + response.data.build[1];
         const coordinatesMoveFrom = getMoveFromCoordinate(buildersId, state);
-
-        console.log('REQUEST');
-        console.log(data);
-
-        console.log('RESPONSE');
-        console.log(response);
 
         dispatch(
           moveBuilder({
@@ -68,9 +65,10 @@ function getMoveFromCoordinate(buildersId, state) {
   }
 }
 
-export function getAvailableMoves(url, customBuilderCoords: undefined) {
+export function getAvailableMovesBuilds(uri, customBuilderCoords: undefined) {
   return (dispatch, getState) => {
     const state = getState().gameState;
+    const url = `${state.serverUrl}/${uri}/`;
     const data = createJsonRequestAvailableMoves(customBuilderCoords, state);
 
     axios

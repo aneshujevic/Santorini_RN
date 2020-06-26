@@ -8,17 +8,19 @@ import {
   toggleMinNext,
   unselectBuilder,
 } from '../actions/playerMoveActions';
-import {GameStatesEnum, GameTypesEnum} from '../gameStatesEnum';
+import {GameStatesEnum} from '../gameStatesEnum';
 import {
   changeGameEngineState,
   checkWin,
   resetMovesGlowing,
   resetState,
-  setAvailableMoves,
+  setAlgorithmType,
+  setAvailableMoves, setDepth,
   setGameType,
-  setUpHeBuilder,
+  setServerUrl,
+  setUpHeBuilder, setUsername,
 } from '../actions/gameEngineActions';
-import {alertMessage, dialogueNewGame} from '../utils';
+import {alertMessage} from '../utils';
 import {preloadedState} from '../store/preloadedState';
 
 const mainReducer = createReducer(preloadedState.gameState, {
@@ -44,17 +46,16 @@ const mainReducer = createReducer(preloadedState.gameState, {
   },
   [unselectBuilder]: (state, action) => {
     state.selected = -1;
-    state.availableMovesOrBuilds = Array(25).fill(0);
     state.glowingCells = Array(25).fill(false);
+    state.availableMovesOrBuilds = Array(25).fill(0);
   },
   [moveBuilder]: (state, action) => {
-    const fromCell = action.payload.fromCell
-      ? action.payload.fromCell
-      : state.selected;
+    const fromCell =
+      action.payload.fromCell !== undefined
+        ? action.payload.fromCell
+        : state.selected;
     const toCell = action.payload.toCell;
-
     const multiplier = Math.floor((state.cells[fromCell] + 1) / 5);
-
     const oldValueOfCell = state.cells[fromCell];
 
     state.cells[fromCell] =
@@ -68,24 +69,21 @@ const mainReducer = createReducer(preloadedState.gameState, {
         : 5 * multiplier + state.cells[toCell];
 
     state.firstHe = state.firstHe === fromCell ? toCell : state.firstHe;
-    state.secondHe = state.secondHe === fromCell ? toCell : state.secondHe;
     state.firstJu = state.firstJu === fromCell ? toCell : state.firstJu;
+    state.secondHe = state.secondHe === fromCell ? toCell : state.secondHe;
     state.secondJu = state.secondJu === fromCell ? toCell : state.secondJu;
-
     state.selected = toCell;
   },
   [buildBlock]: (state, action) => {
     const onCell = action.payload.onCell;
-
     state.cells[onCell] += 1;
-
     state.selected = -1;
     state.glowingCells = Array(25).fill(false);
     state.availableMovesOrBuilds = Array(25).fill(0);
   },
   [setAvailableMoves]: (state, action) => {
-    state.availableMovesOrBuilds = action.payload.availableMovesOrBuilds;
     state.glowingCells = Array(25).fill(false);
+    state.availableMovesOrBuilds = action.payload.availableMovesOrBuilds;
     action.payload.availableMovesOrBuilds.map(
       glowingIndex => (state.glowingCells[glowingIndex] = true),
     );
@@ -114,11 +112,6 @@ const mainReducer = createReducer(preloadedState.gameState, {
     const index = state.cells.findIndex(x => x === 12 || x === 8);
 
     if (index !== -1) {
-      if (state.cells[index] === 8) {
-        alertMessage('AI won!');
-      } else {
-        alertMessage('Human won!');
-      }
       state.gameEnded = true;
     }
   },
@@ -129,8 +122,22 @@ const mainReducer = createReducer(preloadedState.gameState, {
   [setGameType]: (state, action) => {
     state.gameType = action.payload;
   },
+  [setAlgorithmType]: (state, action) => {
+    state.algorithmUri = action.payload;
+  },
+  [setServerUrl]: (state, action) => {
+    state.serverUrl = action.payload;
+  },
+  [setDepth]: (state, action) => {
+    state.depth = action.payload;
+  },
+  [setUsername]: (state, action) => {
+    state.username = action.payload;
+  },
   [resetState]: state => {
+    let gameType = state.gameType;
     state = preloadedState.gameState;
+    state.gameType = gameType;
     return state;
   },
   [toggleMinNext]: state => {

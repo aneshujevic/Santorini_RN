@@ -9,15 +9,14 @@ import {
 } from './gameEngineActions';
 import {
   getAndDoAiMove,
-  getAvailableMoves,
+  getAvailableMovesBuilds,
 } from '../server_communication/movesThunks';
 
-const getAvailableMovesURL = 'http://10.0.2.2:8000/getAvailableMoves/';
-const getAvailableBuildsURL = 'http://10.0.2.2:8000/getAvailableBuilds/';
+const getAvailableMovesURL = 'getAvailableMoves';
+const getAvailableBuildsURL = 'getAvailableBuilds';
 const getMoveMinmaxAiURL = 'http://10.0.2.2:8000/minimax/';
 const getMoveAlphaBetaAiURL = 'http://10.0.2.2:8000/alphaBeta/';
 const getMoveAlphaBetaCustomAiURL = 'http://10.0.2.2:8000/alphaBetaCustom/';
-const defaultDepth = 4;
 
 export const moveBuilder = createAction('MOVE_BUILDER');
 
@@ -80,7 +79,7 @@ export function doPlayerMoveHuAi(idOfCell) {
 
         dispatch(selectBuilder(idOfCell));
         dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_MOVE));
-        dispatch(getAvailableMoves(getAvailableMovesURL));
+        dispatch(getAvailableMovesBuilds(getAvailableMovesURL));
         return;
       case GameStatesEnum.CHOOSING_MOVE:
         if (idOfCell === gameState.selected) {
@@ -97,7 +96,7 @@ export function doPlayerMoveHuAi(idOfCell) {
           dispatch(moveBuilder({toCell: idOfCell}));
           dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILD));
           dispatch(checkWinTrigger());
-          dispatch(getAvailableMoves(getAvailableBuildsURL));
+          dispatch(getAvailableMovesBuilds(getAvailableBuildsURL));
         }
         return;
       case GameStatesEnum.CHOOSING_BUILD:
@@ -118,7 +117,7 @@ export function doPlayerMoveHuAi(idOfCell) {
         return;
       case GameStatesEnum.DO_AI_MOVE:
         dispatch(changeGameEngineState(GameStatesEnum.WAITING_AI_MOVE));
-        dispatch(getAndDoAiMove(getMoveAlphaBetaCustomAiURL, defaultDepth));
+        dispatch(getAndDoAiMove());
         return;
       case GameStatesEnum.WAITING_AI_MOVE:
       case GameStatesEnum.WAITING_AVAILABLE_MOVES:
@@ -151,9 +150,7 @@ function doPlayerMoveAiAi() {
         return;
       case GameStatesEnum.DO_AI_MOVE:
         dispatch(changeGameEngineState(GameStatesEnum.WAITING_AI_MOVE));
-        dispatch(
-          getAndDoAiMove(getMoveAlphaBetaCustomAiURL, defaultDepth, true),
-        );
+        dispatch(getAndDoAiMove(true));
         dispatch(toggleMinNext());
         return;
       case GameStatesEnum.WAITING_AI_MOVE:

@@ -9,7 +9,7 @@ import {
 
 import {imageList} from './ImageSourceList';
 
-const Cell = props => (
+export const Cell = props => (
   <View style={[styles.container]}>
     <ImageBackground source={imageList[0]} style={styles.image}>
       <TouchableOpacity
@@ -78,5 +78,3 @@ const styles = StyleSheet.create({
     elevation: 24,
   },
 });
-
-export default Cell;

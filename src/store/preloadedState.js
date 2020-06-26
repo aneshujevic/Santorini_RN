@@ -1,7 +1,11 @@
-import {GameStatesEnum, GameTypesEnum} from '../gameStatesEnum';
+import {Algorithms, GameStatesEnum, GameTypesEnum} from '../gameStatesEnum';
 
 export const preloadedState = {
   gameState: {
+    algorithmUri: Algorithms.ALPHA_BETA_CUSTOM_HEURISTICS,
+    serverUrl: 'http://10.0.2.2:8000',
+    depth: 3,
+    username: '',
     gameEngineState: GameStatesEnum.SETTING_UP_BUILDERS,
     gameType: GameTypesEnum.HUMAN_VS_AI,
     cells: Array(25).fill(0),

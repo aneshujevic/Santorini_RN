@@ -1,7 +1,7 @@
 import {createAction} from '@reduxjs/toolkit';
 import {GameStatesEnum} from '../gameStatesEnum';
 import {setUpJuBuilder} from './playerMoveActions';
-import {dialogueNewGame} from '../utils';
+import {alertMessage, dialogueNewGame} from '../utils';
 
 export const setAvailableMoves = createAction('SET_AVAILABLE_MOVES_BUILDS');
 
@@ -16,6 +16,14 @@ export const resetMovesGlowing = createAction('RESET_GLOWING_MOVES');
 export const resetState = createAction('RESET_STATE');
 
 export const setGameType = createAction('SET_GAME_TYPE');
+
+export const setAlgorithmType = createAction('SET_ALGORITHM_TYPE');
+
+export const setServerUrl = createAction('SET_SERVER_URL');
+
+export const setDepth = createAction('SET_DEPTH_OF_SEARCH');
+
+export const setUsername = createAction('SET_USERNAME');
 
 export function setUpAiBuildersTrigger() {
   return (dispatch, getState) => {
@@ -80,7 +88,8 @@ export function setUpAiAiBuildersTrigger() {
 
 export function checkWinTrigger() {
   return (dispatch, getState) => {
-    if (getState().gameState.gameEnded) {
+    const state = getState().gameState;
+    if (state.gameEnded) {
       dispatch(dialogueNewGame('Do you want to play another game?'));
       return;
     }
@@ -111,6 +120,14 @@ export function checkWinTrigger() {
     // }
 
     dispatch(checkWin(gameEnded));
+    const index = state.cells.findIndex(x => x === 12 || x === 8);
+    if (index !== -1) {
+      if (state.cells[index] === 8) {
+        alertMessage('AI won!');
+      } else {
+        alertMessage('Human won!');
+      }
+    }
     // dispatch(resetMovesGlowing());
   };
 }
