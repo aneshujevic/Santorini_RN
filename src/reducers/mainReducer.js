@@ -11,14 +11,16 @@ import {
 import {GameStatesEnum} from '../gameStatesEnum';
 import {
   changeGameEngineState,
-  checkWin,
-  resetMovesGlowing,
+  checkWin, resetGlowingCells,
   resetState,
   setAlgorithmType,
-  setAvailableMoves, setDepth,
+  setAvailableMoves,
+  setDepth, setFirstPlayer,
   setGameType,
   setServerUrl,
-  setUpHeBuilder, setUsername,
+  setSuperSecretKey,
+  setUpHeBuilder,
+  setUsername,
 } from '../actions/gameEngineActions';
 import {alertMessage} from '../utils';
 import {preloadedState} from '../store/preloadedState';
@@ -33,7 +35,7 @@ const mainReducer = createReducer(preloadedState.gameState, {
         state.gameEngineState = GameStatesEnum.SETTING_UP_BUILDERS;
       } else {
         state.secondJu = cellIndex;
-        state.gameEngineState = GameStatesEnum.WAITING_AI_SETUP_MOVES;
+        state.gameEngineState = GameStatesEnum.WAITING_ENEMY_SETUP_MOVES;
       }
 
       state.cells[cellIndex] = 9;
@@ -82,11 +84,14 @@ const mainReducer = createReducer(preloadedState.gameState, {
     state.availableMovesOrBuilds = Array(25).fill(0);
   },
   [setAvailableMoves]: (state, action) => {
-    state.glowingCells = Array(25).fill(false);
     state.availableMovesOrBuilds = action.payload.availableMovesOrBuilds;
-    action.payload.availableMovesOrBuilds.map(
-      glowingIndex => (state.glowingCells[glowingIndex] = true),
-    );
+
+    if (action.payload.skipGlowing === false) {
+      state.glowingCells = Array(25).fill(false);
+      action.payload.availableMovesOrBuilds.map(
+        glowingIndex => (state.glowingCells[glowingIndex] = true),
+      );
+    }
   },
   [setUpHeBuilder]: (state, action) => {
     const cellIndex = action.payload;
@@ -115,10 +120,6 @@ const mainReducer = createReducer(preloadedState.gameState, {
       state.gameEnded = true;
     }
   },
-  [resetMovesGlowing]: state => {
-    state.availableMovesOrBuilds = Array(25).fill(0);
-    state.glowingCells = Array(25).fill(false);
-  },
   [setGameType]: (state, action) => {
     state.gameType = action.payload;
   },
@@ -131,14 +132,26 @@ const mainReducer = createReducer(preloadedState.gameState, {
   [setDepth]: (state, action) => {
     state.depth = action.payload;
   },
+  [setSuperSecretKey]: (state, action) => {
+    state.secretKey = action.payload;
+  },
   [setUsername]: (state, action) => {
     state.username = action.payload;
   },
+  [setFirstPlayer]: (state, action) => {
+    state.firstPlayer = action.payload;
+  },
   [resetState]: state => {
-    let gameType = state.gameType;
-    state = preloadedState.gameState;
-    state.gameType = gameType;
-    return state;
+    let newState = JSON.parse(JSON.stringify(preloadedState.gameState));
+    newState.gameType = state.gameType;
+    newState.secretKey = state.secretKey;
+    newState.username = state.username;
+    newState.serverUrl = state.serverUrl;
+    return newState;
+  },
+  [resetGlowingCells]: state => {
+    state.availableMovesOrBuilds = [];
+    state.glowingCells = Array(25).fill(false);
   },
   [toggleMinNext]: state => {
     state.minNext = !state.minNext;

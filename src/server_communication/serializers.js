@@ -6,19 +6,10 @@ export function createJsonRequestAvailableMoves(customBuilderCoords, state) {
       secondHE: state.secondHe,
       firstJU: state.firstJu,
       secondJU: state.secondJu,
-      startPosition: [
-        //   Math.floor(
-        //     customBuilderCoords === undefined
-        //       ? state.selected / 5
-        //       : customBuilderCoords / 5,
-        //   ),
-        //   customBuilderCoords === undefined
-        //     ? state.selected % 5
-        //     : customBuilderCoords % 5,
-        // ],
-        Math.floor(state.selected / 5),
-        state.selected % 5,
-      ],
+      startPosition:
+        customBuilderCoords === undefined
+          ? [Math.floor(state.selected / 5), state.selected % 5]
+          : [Math.floor(customBuilderCoords / 5), customBuilderCoords % 5],
       depth: null,
     },
   ];
@@ -61,4 +52,50 @@ function serializeCellValue(cells) {
       return x;
     }
   });
+}
+
+export function getStartingPlayerMessageJson(username, secretKey) {
+  let message = {
+    messageFrom: username,
+    firstPlayer: username,
+    key: secretKey,
+  };
+
+  return JSON.stringify(message);
+}
+
+export function getSetupMovesMessageJson(
+  username,
+  firstBuilderIndex,
+  secondBuilderIndex,
+  secretKey
+) {
+  let message = {
+    messageFrom: username,
+    firstBuilderIndex,
+    secondBuilderIndex,
+    key: secretKey,
+  };
+
+  return JSON.stringify(message);
+}
+
+export function getMoveAndTypeMessageJson(
+  username,
+  idOfCell,
+  moveType,
+  availableMovesOrBuilds,
+  toCell = -1,
+  secretKey,
+) {
+  let message = {
+    messageFrom: username,
+    moveType: moveType,
+    selected: idOfCell,
+    availableMovesOrBuilds,
+    toCell: toCell,
+    key: secretKey,
+  };
+
+  return JSON.stringify(message);
 }

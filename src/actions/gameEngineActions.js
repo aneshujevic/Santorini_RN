@@ -1,7 +1,8 @@
 import {createAction} from '@reduxjs/toolkit';
 import {GameStatesEnum} from '../gameStatesEnum';
 import {setUpJuBuilder} from './playerMoveActions';
-import {alertMessage, dialogueNewGame} from '../utils';
+import {alertMessage, dialogueNewGame, getAvailableMovesURL} from '../utils';
+import {getAvailableMovesBuilds} from '../server_communication/movesThunks';
 
 export const setAvailableMoves = createAction('SET_AVAILABLE_MOVES_BUILDS');
 
@@ -10,8 +11,6 @@ export const setUpHeBuilder = createAction('SET_UP_HE_BUILDERS');
 export const changeGameEngineState = createAction('CHANGE_GAME_ENGINE_STATE');
 
 export const checkWin = createAction('CHECK_WIN');
-
-export const resetMovesGlowing = createAction('RESET_GLOWING_MOVES');
 
 export const resetState = createAction('RESET_STATE');
 
@@ -23,7 +22,13 @@ export const setServerUrl = createAction('SET_SERVER_URL');
 
 export const setDepth = createAction('SET_DEPTH_OF_SEARCH');
 
+export const setSuperSecretKey = createAction('SET_SECRET_KEY');
+
 export const setUsername = createAction('SET_USERNAME');
+
+export const setFirstPlayer = createAction('SET_FIRST_PLAYER');
+
+export const resetGlowingCells = createAction('RESET_GLOWING_CELLS');
 
 export function setUpAiBuildersTrigger() {
   return (dispatch, getState) => {
@@ -82,7 +87,7 @@ export function setUpAiAiBuildersTrigger() {
     dispatch(setUpJuBuilder(indexes[2]));
     dispatch(setUpHeBuilder(indexes[1]));
     dispatch(setUpHeBuilder(indexes[3]));
-    dispatch(changeGameEngineState(GameStatesEnum.DO_AI_MOVE));
+    dispatch(changeGameEngineState(GameStatesEnum.DO_ENEMY_MOVE));
   };
 }
 
@@ -94,40 +99,61 @@ export function checkWinTrigger() {
       return;
     }
 
-    // let firstJU = state.firstJu;
-    // let secondJU = state.secondJu;
-    // let firstHE = state.firstHe;
-    // let secondHE = state.secondHe;
+    let firstJU = state.firstJu;
+    let secondJU = state.secondJu;
+    let firstHE = state.firstHe;
+    let secondHE = state.secondHe;
     let gameEnded = false;
 
-    // TODO: solve the bug around here Array[0] = 0 as response ? or implement a check :)
-    // if (
-    //   dispatch(getAvailableMoves(getAvailableMovesURL, firstJU)) &&
-    //   state.availableMovesOrBuilds.length === 0 &&
-    //   dispatch(getAvailableMoves(getAvailableMovesURL, secondJU)) &&
-    //   state.availableMovesOrBuilds.length === 0
-    // ) {
-    //   gameEnded = true;
-    //   alertMessage('AI won!!!!');
-    // } else if (
-    //   dispatch(getAvailableMoves(getAvailableMovesURL, firstHE)) &&
-    //   state.availableMovesOrBuilds.length === 0 &&
-    //   dispatch(getAvailableMoves(getAvailableMovesURL, secondHE)) &&
-    //   state.availableMovesOrBuilds.length === 0
-    // ) {
-    //   gameEnded = true;
-    //   alertMessage('Human won!!!!!');
-    // }
+    let juPlayer = {first: 0, second: 0};
+    dispatch(getAvailableMovesBuilds(getAvailableMovesURL, firstJU))
+      .then(
+        () =>
+          (juPlayer.first = getState().gameState.availableMovesOrBuilds.length),
+      )
+      .then(() =>
+        dispatch(getAvailableMovesBuilds(getAvailableMovesURL, secondJU)).then(
+          () =>
+            (juPlayer.second = getState().gameState.availableMovesOrBuilds.length),
+        ),
+      )
+      .then(() => {
+        console.log('first', juPlayer.first);
+        console.log('second', juPlayer.second);
+        if (juPlayer.first === 0 && juPlayer.second === 0) {
+          gameEnded = true;
+          alertMessage('Enemy won!');
+        }
+      });
 
-    dispatch(checkWin(gameEnded));
-    const index = state.cells.findIndex(x => x === 12 || x === 8);
-    if (index !== -1) {
-      if (state.cells[index] === 8) {
-        alertMessage('AI won!');
-      } else {
-        alertMessage('Human won!');
-      }
-    }
-    // dispatch(resetMovesGlowing());
+    let hePlayer = {first: 0, second: 0};
+    return dispatch(getAvailableMovesBuilds(getAvailableMovesURL, firstHE))
+      .then(
+        () =>
+          (hePlayer.first = getState().gameState.availableMovesOrBuilds.length),
+      )
+      .then(() =>
+        dispatch(getAvailableMovesBuilds(getAvailableMovesURL, secondHE)).then(
+          () =>
+            (hePlayer.second = getState().gameState.availableMovesOrBuilds.length),
+        ),
+      )
+      .then(() => {
+        if (hePlayer.first === 0 && hePlayer.second === 0) {
+          gameEnded = true;
+          alertMessage('You won!');
+        }
+      })
+      .then(() => {
+        dispatch(checkWin(gameEnded));
+        const index = state.cells.findIndex(x => x === 12 || x === 8);
+        if (index !== -1) {
+          if (state.cells[index] === 8) {
+            alertMessage('Enemy won!');
+          } else {
+            alertMessage('You won!');
+          }
+        }
+      });
   };
 }

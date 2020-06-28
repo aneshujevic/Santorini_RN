@@ -5,6 +5,7 @@ export const preloadedState = {
     algorithmUri: Algorithms.ALPHA_BETA_CUSTOM_HEURISTICS,
     serverUrl: 'http://10.0.2.2:8000',
     depth: 3,
+    secretKey: 'abcda',
     username: '',
     gameEngineState: GameStatesEnum.SETTING_UP_BUILDERS,
     gameType: GameTypesEnum.HUMAN_VS_AI,
@@ -18,5 +19,6 @@ export const preloadedState = {
     glowingCells: Array(25).fill(false),
     gameEnded: false,
     minNext: true,
+    firstPlayer: undefined,
   },
 };

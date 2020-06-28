@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
+import {PropTypes} from 'prop-types';
 
 export const SettingsItem = props => (
   <View style={styles.containerView}>
@@ -12,6 +13,13 @@ export const SettingsItem = props => (
     </TextInput>
   </View>
 );
+
+SettingsItem.propTypes = {
+  textValue: PropTypes.string,
+  keyboardType: PropTypes.string,
+  textInputValue: PropTypes.string,
+  onChangeText: PropTypes.func.isRequired,
+};
 
 const styles = StyleSheet.create({
   containerView: {

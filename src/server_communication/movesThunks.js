@@ -9,6 +9,7 @@ import {
 import {
   changeGameEngineState,
   checkWinTrigger,
+  resetGlowingCells,
   setAvailableMoves,
 } from '../actions/gameEngineActions';
 import {alertMessage} from '../utils';
@@ -20,9 +21,7 @@ export function getAndDoAiMove(aiVsAiMode = false) {
     const depth = state.depth;
     const data = createJsonRequestAiMove(state, depth, aiVsAiMode);
 
-    console.log(state.depth);
-
-    axios
+    return axios
       .post(url, data)
       .then(response => {
         const buildersId = response.data.id;
@@ -40,7 +39,7 @@ export function getAndDoAiMove(aiVsAiMode = false) {
         if (!aiVsAiMode) {
           dispatch(changeGameEngineState(GameStatesEnum.CHOOSING_BUILDER));
         } else {
-          dispatch(changeGameEngineState(GameStatesEnum.DO_AI_MOVE));
+          dispatch(changeGameEngineState(GameStatesEnum.DO_ENEMY_MOVE));
         }
         dispatch(checkWinTrigger());
       })
@@ -68,15 +67,23 @@ function getMoveFromCoordinate(buildersId, state) {
 export function getAvailableMovesBuilds(uri, customBuilderCoords: undefined) {
   return (dispatch, getState) => {
     const state = getState().gameState;
+    if (state.gameEnded) {
+      dispatch(resetGlowingCells());
+      return;
+    }
+
     const url = `${state.serverUrl}/${uri}/`;
     const data = createJsonRequestAvailableMoves(customBuilderCoords, state);
 
-    axios
+    return axios
       .post(url, data)
       .then(response => response.data.moves.map(x => x[0] * 5 + x[1]))
       .then(formattedResponse =>
         dispatch(
-          setAvailableMoves({availableMovesOrBuilds: formattedResponse}),
+          setAvailableMoves({
+            availableMovesOrBuilds: formattedResponse,
+            skipGlowing: customBuilderCoords !== undefined,
+          }),
         ),
       )
       .catch(() =>

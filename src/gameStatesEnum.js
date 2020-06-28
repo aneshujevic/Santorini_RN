@@ -3,10 +3,10 @@ export const GameStatesEnum = Object.freeze({
   CHOOSING_BUILDER: 1,
   CHOOSING_MOVE: 2,
   CHOOSING_BUILD: 3,
-  WAITING_AI_MOVE: 4,
-  WAITING_AI_SETUP_MOVES: 5,
+  WAITING_ENEMY_MOVE: 4,
+  WAITING_ENEMY_SETUP_MOVES: 5,
   WAITING_AVAILABLE_MOVES: 6,
-  DO_AI_MOVE: 7,
+  DO_ENEMY_MOVE: 7,
 });
 
 export const GameTypesEnum = Object.freeze({

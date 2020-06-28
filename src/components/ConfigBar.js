@@ -34,7 +34,11 @@ export const ConfigBar = props => (
   </View>
 );
 
-ConfigBar.propTypes = {};
+ConfigBar.propTypes = {
+  setAlgorithm: PropTypes.func.isRequired,
+  setDepthOfSearch: PropTypes.func.isRequired,
+  depthOfSearch: PropTypes.string.isRequired,
+};
 
 const styles = StyleSheet.create({
   wholeBar: {
@@ -60,6 +64,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 0.1,
     borderColor: 'rgba(255,255,255,0.76)',
-    padding: 5,
+    padding: 3,
   },
 });
