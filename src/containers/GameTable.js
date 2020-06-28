@@ -101,6 +101,7 @@ function GameTable(props) {
               alertMessage(
                 `Player ${messageDataObj.messageFrom} has left the game`,
               );
+              props.navigation.navigate('Home');
               return;
             }
             dispatch(doPlayerMoveHuHu(undefined, messageDataObj, webSock));
